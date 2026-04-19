@@ -1,39 +1,51 @@
 
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
+import Categories from '../components/categories';
+import Recipes from '../components/recipes';
+
+export type Category = {
+  idCategory: string;
+  strCategory: string;
+  strCategoryThumb: string;
+};
+
+export type Food = {
+  category: string;
+  idFood: string;
+  idCategory: string;
+  recipeName: string;
+  recipeInstructions: string;
+  recipeImage: string;
+  recipeId: string;
+  alternateDrink: null;
+  recipeCategory: string;
+  recipeOrigin: string;
+  cookingDescription: string;
+  recipeTags: string;
+  ingredients: {ingredientName: string, measure: string}[];
+};
 
 export default function HomeScreen() {
   const [activeCategory, setActiveCategory] = useState("Chicken");
-  const [activeFood, setActiveFood] = useState(null);
 
   // Hardcoded categories for news
   const [categories, setCategories] = useState([
     {
-        idCategory: "01",
-        strCategory: "My Food",
-        strCategoryThumb: "https://www.themealdb.com/images/media/meals/8cvkcz1766596315.jpg",
-    },
-    {
-      idCategory: "02",
-      strCategory: "My Favorites",
-      strCategoryThumb: "https://www.themealdb.com/images/media/meals/c0gmo31766594751.jpg",
-    },
-    {
       idCategory: "1",
       strCategory: "Beef",
       strCategoryThumb: "https://www.themealdb.com/images/category/beef.png",
-      
-      },
+    },
     {
       idCategory: "2",
       strCategory: "Chicken",
       strCategoryThumb: "https://www.themealdb.com/images/category/chicken.png",
-     
+    
     },
     {
       idCategory: "3",
@@ -99,7 +111,7 @@ export default function HomeScreen() {
         strCategoryThumb: "https://images.unsplash.com/photo-1619711667542-c049700dd9e0?q=80&w=1888&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       },
       
-  ]);
+  ] as Category[]);
 
   // Keep all foods in state (unfiltered list)
   const [allFood, setAllFood] = useState([
@@ -178,8 +190,6 @@ export default function HomeScreen() {
           measure: "pinch"
         }
       ],
-       
-
     },
     {
       category:'Beef',
@@ -307,7 +317,7 @@ export default function HomeScreen() {
       idFood:'4',
       category:'Beef',
       recipeName: "Beef Bourguignon",
-              recipeInstructions: "Heat a large casserole pan and add 1 tbsp goose fat. Season the beef and fry until golden brown, about 3-5 mins, then turn over and fry the other side until the meat is browned all over, adding more fat if necessary. Do this in 2-3 batches, transferring the meat to a colander set over a bowl when browned.\r\nIn the same pan, fry the bacon, shallots or pearl onions, mushrooms, garlic and bouquet garni until lightly browned. Mix in the tomato purée and cook for a few mins, stirring into the mixture. This enriches the bourguignon and makes a great base for the stew. Then return the beef and any drained juices to the pan and stir through.\r\nPour over the wine and about 100ml water so the meat bobs up from the liquid, but isn’t completely covered. Bring to the boil and use a spoon to scrape the caramelised cooking juices from the bottom of the pan – this will give the stew more flavour.\r\nHeat oven to 150C/fan 130C/gas 2. Make a cartouche: tear off a square of foil slightly larger than the casserole, arrange it in the pan so it covers the top of the stew and trim away any excess foil. Then cook for 3 hrs. If the sauce looks watery, remove the beef and veg with a slotted spoon, and set aside. Cook the sauce over a high heat for a few mins until the sauce has thickened a little, then return the beef and vegetables to the pan.\r\nTo make the celeriac mash, peel the celeriac and cut into cubes. Heat the olive oil in a large frying pan. Tip in the celeriac and fry for 5 mins until it turns golden. Season well with salt and pepper. Stir in the rosemary, thyme, bay and cardamom pods, then pour over 200ml water, enough to nearly cover the celeriac. Turn the heat to low, partially cover the pan and leave to simmer for 25-30 mins.\r\nAfter 25-30 mins, the celeriac should be soft and most of the water will have evaporated. Drain away any remaining water, then remove the herb sprigs, bay and cardamom pods. Lightly crush with a potato masher, then finish with a glug of olive oil and season to taste. Spoon the beef bourguignon into serving bowls and place a large spoonful of the celeriac mash on top. Garnish with one of the bay leaves, if you like.",
+      recipeInstructions: "Heat a large casserole pan and add 1 tbsp goose fat. Season the beef and fry until golden brown, about 3-5 mins, then turn over and fry the other side until the meat is browned all over, adding more fat if necessary. Do this in 2-3 batches, transferring the meat to a colander set over a bowl when browned.\r\nIn the same pan, fry the bacon, shallots or pearl onions, mushrooms, garlic and bouquet garni until lightly browned. Mix in the tomato purée and cook for a few mins, stirring into the mixture. This enriches the bourguignon and makes a great base for the stew. Then return the beef and any drained juices to the pan and stir through.\r\nPour over the wine and about 100ml water so the meat bobs up from the liquid, but isn’t completely covered. Bring to the boil and use a spoon to scrape the caramelised cooking juices from the bottom of the pan – this will give the stew more flavour.\r\nHeat oven to 150C/fan 130C/gas 2. Make a cartouche: tear off a square of foil slightly larger than the casserole, arrange it in the pan so it covers the top of the stew and trim away any excess foil. Then cook for 3 hrs. If the sauce looks watery, remove the beef and veg with a slotted spoon, and set aside. Cook the sauce over a high heat for a few mins until the sauce has thickened a little, then return the beef and vegetables to the pan.\r\nTo make the celeriac mash, peel the celeriac and cut into cubes. Heat the olive oil in a large frying pan. Tip in the celeriac and fry for 5 mins until it turns golden. Season well with salt and pepper. Stir in the rosemary, thyme, bay and cardamom pods, then pour over 200ml water, enough to nearly cover the celeriac. Turn the heat to low, partially cover the pan and leave to simmer for 25-30 mins.\r\nAfter 25-30 mins, the celeriac should be soft and most of the water will have evaporated. Drain away any remaining water, then remove the herb sprigs, bay and cardamom pods. Lightly crush with a potato masher, then finish with a glug of olive oil and season to taste. Spoon the beef bourguignon into serving bowls and place a large spoonful of the celeriac mash on top. Garnish with one of the bay leaves, if you like.",
       recipeImage: "https://images.unsplash.com/photo-1548869206-93b036288d7e?q=80&w=1895&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       recipeId: "beef_04",
       alternateDrink: null,
@@ -703,23 +713,22 @@ export default function HomeScreen() {
         }
       ],
     },
-  ]);
+  ] as Food[]);
 
   const handleChangeCategory = (category: string) => {
     setActiveCategory(category);
   };
 
   // Filter foods by active category during rendering
-  const filteredfoods = allFood.filter(
+  const filteredFoods = allFood.filter(
     (food) => food.category === activeCategory
   );
 
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
+      <View
+        style={styles.scrollContainer}
         testID="scrollContainer"
       >
         <View style={styles.headerContainer} testID="headerContainer">
@@ -739,25 +748,14 @@ export default function HomeScreen() {
 
         <View testID="categoryList">
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {
-            categories.map((category, index) => (
-              <TouchableWithoutFeedback key={index} onPress={() => setActiveCategory(category.strCategory)}>
-                <View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2}}>
-                <View style={{width: wp(18), height: wp(18), backgroundColor: category.idCategory === '01' || category.idCategory === '02' ? '#38f635' : activeCategory === category.strCategory ? '#F59E0B' : '#d7d7d7', marginHorizontal: wp(1), borderRadius: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden'}}>
-                  <Image source={{uri: category.strCategoryThumb}} width={hp(6)} height={hp(6)} resizeMode="cover" borderRadius={wp(18) / 2} />
-                </View>
-                <Text>{category.strCategory}</Text>
-                </View>
-              </TouchableWithoutFeedback>
-            ))
-          }
+            <Categories categories={categories} activeCategory={activeCategory} handleChangeCategory={setActiveCategory} />
           </ScrollView>
         </View>
 
         <View testID="foodList">
-
+          <Recipes categories={categories} foods={filteredFoods} />
           </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }

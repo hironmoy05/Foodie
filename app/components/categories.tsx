@@ -1,24 +1,31 @@
+import { useNavigation } from "@react-navigation/native"; // Import navigation
+import React from "react";
 import {
-    View,
-    Text,
-    ScrollView,
-    TouchableOpacity,
-    Image,
-    StyleSheet,
-  } from "react-native";
-  import React from "react";
-  import { useNavigation } from "@react-navigation/native"; // Import navigation
-  import {
-    widthPercentageToDP as wp,
-    heightPercentageToDP as hp,
-  } from "react-native-responsive-screen";
-  import Animated, { FadeInDown } from "react-native-reanimated";
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
+import { Category } from "../screens/HomeScreen";
+
+  interface CategoryProps {
+    categories: Category[];
+    activeCategory: string;
+    handleChangeCategory: (category: string) => void;
+  }
   
   export default function Categories({
     categories,
     activeCategory,
     handleChangeCategory,
-  }) {
+  }: CategoryProps) {
     const navigation = useNavigation(); // Use navigation
   
     return (
