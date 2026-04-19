@@ -23,7 +23,7 @@ export default function RecipeDetailScreen({ route }: { route: any }) {
   const navigation = useNavigation();
 
   const handleToggleFavorite = () => {
-    dispatch(toggleFavorite(recipe.idFood)); // Dispatch the recipe to favorites
+    dispatch(toggleFavorite(recipe)); // Dispatch the recipe to favorites
   };
 
   return (

@@ -1,10 +1,17 @@
-import { View,Text,TextInput,TouchableOpacity,Image,StyleSheet,} from "react-native";
-import React, { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {widthPercentageToDP as wp,heightPercentageToDP as hp,} from "react-native-responsive-screen";
+import React, { useState } from "react";
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
+import { heightPercentageToDP as hp, widthPercentageToDP as wp, } from "react-native-responsive-screen";
 
-export default function RecipesFormScreen({ route, navigation }) {
-  const { recipeToEdit, recipeIndex, onrecipeEdited } = route.params || {};
+interface Recipe {
+  title: string;
+  image: string;
+  description: string;
+}
+
+export default function RecipesFormScreen({ route, navigation }: { route: any; navigation: any }) {
+  const { recipeToEdit, recipeIndex, onrecipeEdited, onrecipeAdded } = route.params || {};
+  console.log("RecipesFormScreen route.params:", route.params);
   const [title, setTitle] = useState(recipeToEdit ? recipeToEdit.title : "");
   const [image, setImage] = useState(recipeToEdit ? recipeToEdit.image : "");
   const [description, setDescription] = useState(
@@ -12,7 +19,62 @@ export default function RecipesFormScreen({ route, navigation }) {
   );
 
   const saverecipe = async () => {
- 
+    console.log("Saving recipe:", { title, image, description });
+    try {
+      // 1. Initialize a new recipe object
+      const newrecipe = {
+        title,
+        image,
+        description,
+      };
+
+      // 2. Retrieve existing recipes from AsyncStorage
+      let recipes: Recipe[] = [];
+      if (AsyncStorage) {
+        const existingRecipesJSON = await AsyncStorage.getItem("customrecipes");
+        recipes = existingRecipesJSON ? JSON.parse(existingRecipesJSON) : [];
+      }
+
+      // 3. Update or add recipe
+      if (recipeToEdit && recipeIndex !== undefined) {
+        // Editing an existing recipe
+        recipes[recipeIndex] = newrecipe;
+        // 4. Call callback to notify parent component
+        if (onrecipeEdited) {
+          console.log("Calling onrecipeEdited callback");
+          onrecipeEdited(recipeIndex, newrecipe);
+        }
+      } else {
+        // Adding a new recipe
+        recipes.push(newrecipe);
+        console.log("Added new recipe to array:", recipes);
+        // Call callback to notify parent component
+        if (onrecipeAdded) {
+          console.log("Calling onrecipeAdded callback with:", newrecipe);
+          onrecipeAdded(newrecipe);
+        } else {
+          console.log("onrecipeAdded callback not provided");
+        }
+      }
+
+      // 5. Save updated array back to AsyncStorage
+      if (AsyncStorage) {
+        try {
+          await AsyncStorage.setItem("customrecipes", JSON.stringify(recipes));
+          console.log("Saved recipes to AsyncStorage:", recipes);
+        } catch (storageError) {
+          console.error("Failed to save to AsyncStorage:", storageError);
+        }
+      }
+
+      // 6. Navigate back to previous screen
+      console.log("Navigating back to previous screen");
+      navigation.goBack();
+    } catch (error) {
+      console.error("Error saving recipe:", error);
+      // Still navigate back even if storage fails
+      navigation.goBack();
+    }
   };
 
   return (

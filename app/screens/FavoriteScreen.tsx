@@ -1,24 +1,25 @@
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import { useSelector } from "react-redux";
 import {
-  View,
-  Text,
   FlatList,
   Image,
   StyleSheet,
+  Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import {
-  widthPercentageToDP as wp,
   heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
+import { useSelector } from "react-redux";
 
 export default function FavoriteScreen() {
   const navigation = useNavigation();
 
   // Assuming you have a similar structure for recipes in your Redux store
-  const favoriteRecipes = useSelector((state) => state.favorites);
+  const favoriteRecipes = useSelector((state: any) => state.favorites);
   const favoriteRecipesList = favoriteRecipes?.favoriterecipes || [];
   console.log(favoriteRecipes.favoriterecipes);
   console.log('favoriteRecipesList',favoriteRecipesList);
@@ -38,7 +39,7 @@ export default function FavoriteScreen() {
             borderRadius: 5,
             marginTop: 10,
             width: 100,
-            alignItems: "center ",
+            alignItems: "center",
           }}
         >
           <Text style={{ color: "#fff" }}>Go back</Text>
@@ -74,6 +75,22 @@ export default function FavoriteScreen() {
         <Text style={{ color: "#fff" }}>Go back</Text>
       </TouchableOpacity>
     
+      <FlatList
+        data={favoriteRecipesList}
+        keyExtractor={(item) => item.idFood}
+        contentContainerStyle={styles.listContentContainer}
+        renderItem={({ item }) => (
+          <TouchableWithoutFeedback onPress={() => navigation.navigate("RecipeDetail", item)}>
+          <View style={styles.cardContainer}>
+            <Image
+              source={{ uri: item.recipeImage }}
+              style={styles.recipeImage}
+            />
+            <Text style={styles.recipeTitle}>{item.recipeName}</Text>
+          </View>
+          </TouchableWithoutFeedback>
+        )}
+      />
     </>
   );
 }

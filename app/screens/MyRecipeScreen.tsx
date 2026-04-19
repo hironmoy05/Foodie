@@ -1,46 +1,122 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-    View,
-    Text,
-    ScrollView,
-    TouchableOpacity,
-    Image,
-    StyleSheet,
-    ActivityIndicator,
-  } from "react-native";
-  import React, { useEffect, useState } from "react";
-  import AsyncStorage from "@react-native-async-storage/async-storage";
-  import { useNavigation } from "@react-navigation/native";
-  import {
-    widthPercentageToDP as wp,
-    heightPercentageToDP as hp,
-  } from "react-native-responsive-screen";
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
+
+// Global recipes state for this session
+let globalRecipes: Recipe[] = [];
+
+interface Recipe {
+  title: string;
+  image: string;
+  description: string;
+}
+
+export default function MyRecipeScreen() {
+  const navigation = useNavigation();
+  const [recipes, setrecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  export default function MyRecipeScreen() {
-    const navigation = useNavigation();
-    const [recipes, setrecipes] = useState([]);
-    const [loading, setLoading] = useState(true);
-  
-    useEffect(() => {
-      const fetchrecipes = async () => {
-        
-        };
-  
-      fetchrecipes();
+    const fetchrecipes = useCallback(async () => {
+      try {
+        if (AsyncStorage) {
+          const storedRecipes = await AsyncStorage.getItem("customrecipes");
+          console.log("Fetched recipes from AsyncStorage:", storedRecipes);
+          if (storedRecipes) {
+            const parsed = JSON.parse(storedRecipes);
+            console.log("Parsed recipes:", parsed);
+            globalRecipes = parsed; // Update global state
+            setrecipes(parsed);
+          } else {
+            console.log("No recipes found in AsyncStorage, using global state");
+            setrecipes(globalRecipes);
+          }
+        } else {
+          console.log("AsyncStorage not available, using global state");
+          setrecipes(globalRecipes);
+        }
+      } catch (error) {
+        console.error("Error fetching recipes:", error);
+        // Fallback: use global state
+        setrecipes(globalRecipes);
+      } finally {
+        setLoading(false);
+      }
     }, []);
+
+    useEffect(() => {
+      fetchrecipes();
+    }, [fetchrecipes]);
+
+    useFocusEffect(
+      useCallback(() => {
+        console.log("MyRecipeScreen focused, refetching recipes");
+        fetchrecipes();
+      }, [fetchrecipes])
+    );
+
+    console.log("MyRecipeScreen rendering with recipes count:", recipes.length);
   
     const handleAddrecipe = () => {
-
+      console.log("Navigating to RecipesFormScreen");
+      // @ts-ignore
+      navigation.navigate("RecipesFormScreen", {
+        onrecipeAdded: (newRecipe: Recipe) => {
+          console.log("onrecipeAdded callback called with:", newRecipe);
+          globalRecipes = [...globalRecipes, newRecipe]; // Update global state
+          setrecipes(prevRecipes => {
+            const updated = [...prevRecipes, newRecipe];
+            console.log("Updated recipes state:", updated);
+            return updated;
+          });
+        }
+      });
     };
   
-    const handlerecipeClick = (recipe) => {
-
+    const handlerecipeClick = (recipe: Recipe) => {
+      // @ts-ignore
+      navigation.navigate("CustomRecipesScreen", { recipe });
     };
-    const deleterecipe = async (index) => {
-    
+    const deleterecipe = async (index: number) => {
+      try {
+        const updatedRecipes = recipes.filter((_, i) => i !== index);
+        globalRecipes = updatedRecipes; // Update global state
+        setrecipes(updatedRecipes);
+        if (AsyncStorage) {
+          await AsyncStorage.setItem("customrecipes", JSON.stringify(updatedRecipes));
+        }
+      } catch (error) {
+        console.error("Error deleting recipe:", error);
+        // Still update local state even if storage fails
+        const updatedRecipes = recipes.filter((_, i) => i !== index);
+        globalRecipes = updatedRecipes;
+        setrecipes(updatedRecipes);
+      }
     };
   
-    const editrecipe = (recipe, index) => {
-
+    const editrecipe = (recipe: Recipe, index: number) => {
+      // @ts-ignore
+      navigation.navigate("RecipesFormScreen", {
+        recipeToEdit: recipe,
+        recipeIndex: index,
+        onrecipeEdited: (updatedIndex: number, updatedRecipe: Recipe) => {
+          const updatedRecipes = [...recipes];
+          updatedRecipes[updatedIndex] = updatedRecipe;
+          setrecipes(updatedRecipes);
+        }
+      });
     };
   
     return (
@@ -59,22 +135,36 @@ import {
         ) : (
           <ScrollView contentContainerStyle={styles.scrollContainer}>
             {recipes.length === 0 ? (
-              <Text style={styles.norecipesText}>No recipes added yet.</Text>
+              <Text style={styles.norecipesText}>
+                No recipes added yet. Tap Add New recipe to open the form.
+              </Text>
             ) : (
               recipes.map((recipe, index) => (
                 <View key={index} style={styles.recipeCard} testID="recipeCard">
                   <TouchableOpacity testID="handlerecipeBtn" onPress={() => handlerecipeClick(recipe)}>
-                  
+                    {recipe.image && (
+                      <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+                    )}
                     <Text style={styles.recipeTitle}>{recipe.title}</Text>
                     <Text style={styles.recipeDescription} testID="recipeDescp">
-                  
+                      {recipe.description}
                     </Text>
                   </TouchableOpacity>
   
                   {/* Edit and Delete Buttons */}
                   <View style={styles.actionButtonsContainer} testID="editDeleteButtons">
-                    
-                
+                    <TouchableOpacity
+                      onPress={() => editrecipe(recipe, index)}
+                      style={styles.editButton}
+                    >
+                      <Text style={styles.editButtonText}>Edit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => deleterecipe(index)}
+                      style={styles.deleteButton}
+                    >
+                      <Text style={styles.deleteButtonText}>Delete</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               ))
@@ -100,12 +190,12 @@ import {
     },
     addButton: {
       backgroundColor: "#4F75FF",
-      padding: wp(.7),
+      paddingVertical: hp(1.2),
+      paddingHorizontal: wp(4),
       alignItems: "center",
-      borderRadius: 5,
-      width:300,
-     marginLeft:500
-      // marginBottom: hp(2),
+      borderRadius: 10,
+      alignSelf: "center",
+      marginBottom: hp(2),
     },
     addButtonText: {
       color: "#fff",
@@ -114,12 +204,10 @@ import {
     },
     scrollContainer: {
       paddingBottom: hp(2),
-      height:'auto',
-      display:'flex',
-      alignItems:'center',
-      justifyContent:'center',
-      flexDirection:'row',
-      flexWrap:'wrap'
+      width: "100%",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "center",
     },
     norecipesText: {
       textAlign: "center",
